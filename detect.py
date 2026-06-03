@@ -52,7 +52,7 @@ def detect(save_img=False):
     # Set Dataloader
     vid_path, vid_writer = None, None
     if webcam:
-        view_img = check_imshow()
+        view_img = check_imshow() if view_img else False
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride)
     else:
@@ -121,12 +121,12 @@ def detect(save_img=False):
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
 
-                    if blur:
+                    if opt.blur:
                         #Add Object Blurring Code
                         #..................................................................
                         crop_obj = im0[int(xyxy[1]):int(xyxy[3]),int(xyxy[0]):int(xyxy[2])]
-                        blur = cv2.blur(crop_obj,(60,60))
-                        im0[int(xyxy[1]):int(xyxy[3]),int(xyxy[0]):int(xyxy[2])] = blur
+                        blurred_obj = cv2.blur(crop_obj,(60,60))
+                        im0[int(xyxy[1]):int(xyxy[3]),int(xyxy[0]):int(xyxy[2])] = blurred_obj
                         #..................................................................
                    
                     if save_txt:  # Write to file

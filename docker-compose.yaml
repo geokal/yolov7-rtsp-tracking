@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # 1. RTSP Server (The Hub)
+  # MediaMTX handles the RTSP stream distribution
+  rtsp-server:
+    image: bluenviron/mediamtx:latest
+    ports:
+      - "8554:8554" # RTSP port
+
+  # 2. RTSP Producer (The Camera Simulator)
+  # Streams a local video file to the MediaMTX server
+  rtsp-producer:
+    image: jrottenberg/ffmpeg:4.4-ubuntu
+    depends_on:
+      - rtsp-server
+    volumes:
+      - ./sample_video.mp4:/video/sample_video.mp4:ro
+    # This command loops the video and sends it to the server at rtsp://rtsp-server:8554/live
+    command: >
+      -re -stream_loop -1 -i /video/sample_video.mp4
+      -c copy -f rtsp rtsp://rtsp-server:8554/live
+
+  # 3. YOLOv7 Tracker (The Consumer)
+  # Reads the stream from MediaMTX and performs object tracking
+  yolov7-tracker:
+    build: .
+    depends_on:
+      - rtsp-server
+      - rtsp-producer
+    # Point the source to the RTSP stream URL
+    # --nosave and --view-img behavior might need adjustment for headless Docker
+    command: >
+      --source rtsp://rtsp-server:8554/live
+      --weights yolov7.pt
+      --device cpu
+      --nosave
+    volumes:
+      - ./runs:/app/runs
