@@ -1,5 +1,25 @@
+# Local artifacts
 runs/
-*/__pycache__/
-__pycache__
-weights/
-traced_model.pt
+labels/
+results.json
+sample_video.mp4
+
+# Model Weights
+*.pt
+*.weights
+
+# Python
+**/__pycache__/
+__pycache__/
+*.pyc
+.env
+.venv/
+env/
+venv/
+python_environ/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
