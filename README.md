@@ -12,6 +12,48 @@ This repository is a specialized fork of the [original YOLOv7-object-tracking pr
 - Docker and Docker Compose
 - A sample video file named `sample_video.mp4` in the root directory.
 
+## Steps to run Code
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/geokal/yolov7-rtsp-tracking.git
+cd yolov7-rtsp-tracking
+```
+
+### 2. Prepare the Model
+Download the YOLOv7 weights (if not already present):
+```bash
+# Weights will also auto-download on first run
+wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7.pt
+```
+
+### 3. Run via Docker (Recommended)
+This method starts the full RTSP simulation stack (MediaMTX + FFmpeg + YOLOv7).
+1. Place `sample_video.mp4` in the project root.
+2. Start the stack:
+   ```bash
+   docker-compose up --build
+   ```
+
+### 4. Run Locally (Native Python)
+If you prefer to run directly on your host machine:
+1. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/macOS
+   # OR: venv\Scripts\activate  # Windows
+   ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the hardened tracker:
+   ```bash
+   python detect_and_track.py --source 0 --save-json  # Webcam
+   # OR
+   python detect_and_track.py --source path/to/video.mp4 --save-json --nosave
+   ```
+
 ## Quick Start (Docker)
 1. **Prepare the video**:
    Place your `sample_video.mp4` in the project root.
