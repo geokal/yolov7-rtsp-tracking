@@ -3,6 +3,7 @@ import cv2
 import time
 import torch
 import argparse
+import json
 from pathlib import Path
 from numpy import random
 from random import randint
@@ -113,6 +114,7 @@ def detect(save_img=False):
 
     # Set Dataloader
     vid_path, vid_writer = None, None
+    json_results = []
     if webcam:
         view_img = check_imshow() if view_img else False
         cudnn.benchmark = True  # set True to speed up constant image size inference
@@ -226,11 +228,22 @@ def detect(save_img=False):
                             f.write(txt_str)
 
                     # draw boxes for visualization
-                    if len(tracked_dets)>0:
-                        bbox_xyxy = tracked_dets[:,:4]
+                    if len(tracked_dets) > 0:
+                        bbox_xyxy = tracked_dets[:, :4]
                         identities = tracked_dets[:, 8]
                         categories = tracked_dets[:, 4]
+                        # Sort provides [x1, y1, x2, y2, class, conf, id, ...] but check indexing
                         draw_boxes(im0, bbox_xyxy, identities, categories, names, save_with_object_id, txt_path)
+
+                        if opt.save_json:
+                            for det_idx in range(len(tracked_dets)):
+                                json_results.append({
+                                    'frame': int(frame),
+                                    'track_id': int(identities[det_idx]),
+                                    'class': names[int(categories[det_idx])],
+                                    'bbox': [float(x) for x in bbox_xyxy[det_idx]],
+                                    'conf': float(tracked_dets[det_idx, 5]) if tracked_dets.shape[1] > 5 else 0.0
+                                })
                 else: #SORT should be updated even with no detections
                     tracked_dets = sort_tracker.update()
                 #........................................................
@@ -266,6 +279,11 @@ def detect(save_img=False):
                             vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                         vid_writer.write(im0)
     finally:
+        if opt.save_json and json_results:
+            json_path = str(save_dir / 'results.json')
+            with open(json_path, 'w') as f:
+                json.dump(json_results, f, indent=4)
+            print(f"Tracking results saved to {json_path}")
         if isinstance(vid_writer, cv2.VideoWriter):
             vid_writer.release()
         if view_img:
@@ -309,6 +327,17 @@ if __name__ == '__main__':
     print(opt)
     #check_requirements(exclude=('pycocotools', 'thop'))
     if opt.download and not os.path.exists(''.join(opt.weights)):
+        print('Model weights not found. Attempting to download now...')
+        download('./')
+
+    with torch.no_grad():
+        if opt.update:  # update all models (to fix SourceChangeWarning)
+            for opt.weights in ['yolov7.pt']:
+                detect()
+                strip_optimizer(opt.weights)
+        else:
+            detect()
+opt.weights)):
         print('Model weights not found. Attempting to download now...')
         download('./')
 
