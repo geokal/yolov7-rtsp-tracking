@@ -35,5 +35,6 @@ services:
       --weights yolov7.pt
       --device cpu
       --nosave
+      --save-json
     volumes:
       - ./runs:/app/runs
