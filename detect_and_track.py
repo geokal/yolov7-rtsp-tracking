@@ -321,23 +321,13 @@ if __name__ == '__main__':
     parser.add_argument('--colored-trk', action='store_true', help='assign different color to every track')
     parser.add_argument('--save-bbox-dim', action='store_true', help='save bounding box dimensions with --save-txt tracks')
     parser.add_argument('--save-with-object-id', action='store_true', help='save results with object id to *.txt')
+    parser.add_argument('--save-json', action='store_true', help='save results to results.json')
 
     parser.set_defaults(download=True)
     opt = parser.parse_args()
     print(opt)
     #check_requirements(exclude=('pycocotools', 'thop'))
     if opt.download and not os.path.exists(''.join(opt.weights)):
-        print('Model weights not found. Attempting to download now...')
-        download('./')
-
-    with torch.no_grad():
-        if opt.update:  # update all models (to fix SourceChangeWarning)
-            for opt.weights in ['yolov7.pt']:
-                detect()
-                strip_optimizer(opt.weights)
-        else:
-            detect()
-opt.weights)):
         print('Model weights not found. Attempting to download now...')
         download('./')
 
